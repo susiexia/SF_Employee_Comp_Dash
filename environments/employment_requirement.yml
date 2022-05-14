@@ -8,3 +8,5 @@ dependencies:
     - plotly==5.4.0
     - dash==2.0.0
     - gunicorn==20.1.0
+    - sodapy==2.1.1
+#    - werkzeug==2.0.3
