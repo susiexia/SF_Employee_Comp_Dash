@@ -10,4 +10,5 @@ dependencies:
     - gunicorn==20.1.0
     - sodapy==2.1.1
     - Flask-Caching=1.10.1
+    - statsmodels=0.13.2
 #    - werkzeug==2.0.3

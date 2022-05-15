@@ -11,10 +11,12 @@ import plotly.express as px
 try:
     socrata_domain = 'data.sfgov.org,'
     socrata_dataset_identifier = '88g8-5mnd'
-    # client = Socrata("data.sfgov.org", None) # public, limit 1000 rows
     client = Socrata("data.sfgov.org",API_Token)
 
     results = client.get(socrata_dataset_identifier,limit = None)
+   
+    # or df = pd.read_json('')
+
     df = pd.DataFrame(results)
     print(df.shape)
 except:
@@ -81,7 +83,54 @@ def get_drpdn_and_df(n):
                                                         df["year"].unique()])
 
 
+# BREAK-DOWN VIZ: two input,once stored data changes or update, children of output-div update
 
+# @app.callback(Output("output-div", "children"),
+#               Input("year", "value"),
+#               Input("stored", "data"),
+# )
+# def make_bars(year_select, data):
+#     df = pd.DataFrame(data)
+
+#     HISTOGRAM
+#     df_hist = df[df["year"]==year_select]
+#     fig_hist = px.histogram(df_hist, x="job")
+#     fig_hist.update_xaxes(categoryorder="total descending")
+
+#     STRIP CHART
+#     fig_strip = px.strip(df_hist, x="animal_stay_days", y="intake_type")
+
+#     SUNBURST
+#     df_sburst = df.dropna(subset=['chip_status'])
+#     df_sburst = df_sburst[df_sburst["intake_type"].isin(["STRAY", "FOSTER", "OWNER SURRENDER"])]
+#     fig_sunburst = px.sunburst(df_sburst, path=["year", "intake_type", "chip_status"])
+
+#     Empirical Cumulative Distribution
+#     df_ecdf = df[df["year"].isin(["DOG","CAT"])]
+#     fig_ecdf = px.ecdf(df_ecdf, x="animal_stay_days", color="year")
+
+#     LINE CHART
+#     df_line = df.sort_values(by=["salary"], ascending=True)
+#     df_line = df_line.groupby(
+#         ["intake_time", "year"]).size().reset_index(name="count")
+#     fig_line = px.line(df_line, x="intake_time", y="count",
+#                        color="year", markers=True)
+
+#     return [
+#         html.Div([
+#             html.Div([dcc.Graph(figure=fig_hist)], className="six columns"),
+#             html.Div([dcc.Graph(figure=fig_strip)], className="six columns"),
+#         ], className="row"),
+#         html.H2("All Animals", style={"textAlign":"center"}),
+#         html.Hr(),
+#         html.Div([
+#             html.Div([dcc.Graph(figure=fig_sunburst)], className="six columns"),
+#             html.Div([dcc.Graph(figure=fig_ecdf)], className="six columns"),
+#         ], className="row"),
+#         html.Div([
+#             html.Div([dcc.Graph(figure=fig_line)], className="twelve columns"),
+#         ], className="row"),
+#     ]
 
 if __name__ == '__main__':
     app.run_server(debug=True)
