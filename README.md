@@ -12,6 +12,13 @@ Discover the high level trends and compensation component detaila in San Francis
 
 --------------------------------------------------
 
+## Next Steps:
+* Pretty style
+* deploy to heroku
+* introduce more dataset, merge and find more insights (for exa)
+
+--------------------------------------------------
+
 ![challenge_Result.PNG](/challenge_Result.PNG)
 
 --------------------------------------------------
@@ -35,7 +42,11 @@ Rows reduction from 759K to 168K,
 - ETL Jupyter Notebook  [sf_comp_jupyter_analytics.ipynb](/sf_comp_jupyter_analytics.ipynb)
 ### Insights
 
-
+Unique number:
+* Organization_group(6)
+* department(51)
+* job_family(56)
+* job(1111)
 employee nunique:
 same employee joined different department,
 duplicate different year but same employeee, assume: 
