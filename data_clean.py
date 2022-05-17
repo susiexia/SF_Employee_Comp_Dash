@@ -62,7 +62,8 @@ def data_clean(df):
     
     # call
     res =  outlier_remove(df)
-
+    print(res.shape)
+    print('----------Data is clean----------')
     # output dataframes:
     return res
 

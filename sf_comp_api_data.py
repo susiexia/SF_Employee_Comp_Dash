@@ -1,18 +1,15 @@
-from operator import index
-from statistics import mean, median
 
-from matplotlib.cbook import violin_stats
+from flask_caching import Cache
 from config import API_Token
 from data_clean import data_clean
 from sodapy import Socrata
 
 import pandas as pd
-import numpy as np
-from scipy import stats
-
 
 from dash import Dash, html, dcc, Input, Output 
 import plotly.express as px
+
+
 
 ######################################################
 # MVC - Model: 1.load  
@@ -26,10 +23,10 @@ try:
     where = "year in ('2018','2019','2020','2021','2022') and year_type = 'Calendar'" )
 
     df = pd.DataFrame(results)
-    print(df.shape)
+    print('----------Data Loaded----------/n', df.shape)
 except:
     df = pd.read_csv('plotly_dash/data/Employee_Compensation.csv')
-    print('unable extract data by calling API, loading csv instead', df.shape)
+    print('!!!unable extract data by calling API, loading csv instead!!!', df.shape)
 
 # MVC - Model: 2.data prep and clean
 clean_df = data_clean(df)
@@ -181,11 +178,11 @@ def update_segment_fig(year, segment, metrics,top):
             Input("timer","n_intervals"))
 def store_aggre(year,n):
     filtered_df = clean_df[clean_df.year == year]
-    test_df = filtered_df[['organization_group','department','total_compensation']].groupby(['organization_group','department'])['total_compensation'].agg(['mean','median'])
+    test_df = filtered_df[['organization_group','department','total_compensation']].groupby(['organization_group','department'])['total_compensation'].agg(['mean','median','sum'])
     test_df.reset_index(inplace=True)
     print(test_df.shape)
     return test_df.to_dict('records')
-
+# xx.sort_values(by='sum', ascending=False).iloc[0:10]
 
     
 
