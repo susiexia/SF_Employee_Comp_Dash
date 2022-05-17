@@ -15,6 +15,7 @@ try:
 
     df = pd.DataFrame(results)
     # print(df.shape)
+    
 except:
     df = pd.read_csv('plotly_dash/data/Employee_Compensation.csv')
     print('unable extract data by calling API, loading entire csv instead', df.shape)
@@ -37,35 +38,37 @@ def data_clean(df):
                 df[column] = df[column].astype('float64')
     #print(df.dtypes)
 
-    # drop off irrelevent information
+    # drop off irrelevent information, records with negative and zero values 
     df.drop(irrelavant_column_name, axis=1, inplace=True)
     df.drop_duplicates(subset=['employee_identifier'], keep='last',ignore_index=True)
     df = df[(df['salaries']>=0)&(df['overtime']>=0)&(df['other_salaries']>=0)&(df['retirement']>=0)&(df['health_and_dental']>=0)&
                             (df['total_salary']>0)&(df['total_benefits']>0)&(df['total_compensation']>0)]
     # debug
-    try: 
-        if all((df['total_salary']!=0)&(df['total_benefits']!=0)&(df['total_compensation']!=0)):
-            print(df.dtypes)
-    except:
-        raise
-    outlier_df = df.copy()
+    if not all((df['total_salary']!=0)&(df['total_benefits']!=0)&(df['total_compensation']!=0)):
+        print('Please check the data duplicate section')
+    
+    #print(df.shape)
+
     # outliers
     def outlier_remove(df):
-        df['ts_zscore'] = np.abs(stats.zscore(df['total_salary']))
-        df['tb_zscore'] = np.abs(stats.zscore(df['total_salary']))
-        df['tc_zscore'] = np.abs(stats.zscore(df['total_compensation']))
+        outlier_df = df.copy()
+        outlier_df['ts_zscore'] = np.abs(stats.zscore(outlier_df['total_salary']))
+        outlier_df['tb_zscore'] = np.abs(stats.zscore(outlier_df['total_salary']))
+        outlier_df['tc_zscore'] = np.abs(stats.zscore(outlier_df['total_compensation']))
 
-        df[(df['ts_zscore']< 3)&(df['tb_zscore']< 3)&(df['tc_zscore']< 3)]
-        return df.drop(['ts_zscore','tb_zscore','tc_zscore'], axis=1, inplace=True)
+        outlier_clean_df = outlier_df.loc[(outlier_df['ts_zscore']< 3)&(outlier_df['tb_zscore']< 3)&(outlier_df['tc_zscore']< 3)]
+        outlier_clean_df= outlier_clean_df.drop(['ts_zscore','tb_zscore','tc_zscore'], axis=1)
+        return outlier_clean_df
+    
     # call
-    outlier_remove(df)
+    res =  outlier_remove(df)
 
     # output dataframes:
-    clean_df = df
+    return res
 
     # high_level_df = df.drop(['salaries', 'overtime', 'other_salaries',
     # 'retirement','health_and_dental', 'other_benefits'], axis =1)
-    return clean_df
+    # return clean_df
 
 
 if __name__ == '__main__':
