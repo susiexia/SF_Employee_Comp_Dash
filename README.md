@@ -6,8 +6,11 @@
 1. Discover and understand the high level trends and compensation component details from the datasets of San Francisco Controller Employees Total Compensation (TC) during past 4 years.
 
 2. Provide visualized insights to job-seekers that how does SF Controller's Office pay to their employees.
+
+![web_demo.mov](/web_demo.mov)
 --------------------------------------------------
-![Demo_gif](plotly_dash/web_demo.mov)
+**Screenshot**
+![web_screenshot.png](/web_screenshot.png)
 --------------------------------------------------
 ## Process and Output:
 
@@ -28,7 +31,6 @@ Since the time and scope limitations, this project focus on past 4 years control
 * Increase page load speed, will add cache or dcc.store to temparay store and share data
 * add format style
 * deploy to heroku
-
 
 --------------------------------------------------
 ### Data Resources:
