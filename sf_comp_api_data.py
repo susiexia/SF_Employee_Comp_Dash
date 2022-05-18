@@ -62,7 +62,7 @@ app.layout = html.Div(children=[
     html.H6("Discover compensation from aggregated insights"),
     html.P("Which year are you looking for?"),
 
-    dcc.Slider(id='year_slider', value=2013, min=2018, max=2021, step=1,
+    dcc.Slider(id='year_slider', value=2018, min=2018, max=2021, step=1,
          marks={"2018":'2018', "2019":'2019',"2020":'2020',"2021":'2021'}
      ),
     html.P("Which segment are you looking for?"),    
@@ -137,7 +137,7 @@ def update_silder_charts(year_value, top_or_bottom, segment_value):
     print(slider_df.head(2), 'The before slider df info')
     
     
-    slider_df = slider_df[slider_df['year'] == 2013]
+    slider_df = slider_df[slider_df['year'] == year_value]
 
     if len(slider_df.index)==0:
         raise exceptions.PreventUpdate
@@ -182,7 +182,7 @@ def update_silder_charts(year_value, top_or_bottom, segment_value):
                 data_frame= aggrgate_df(bottom_slider_df,segment_value,'total_compensation', top=False),
                 x=aggrgate_df(bottom_slider_df,segment_value,'total_compensation', top=False).index.tolist(),
                 y=['total_salary','total_benefits'],
-                labels={"x": segment_value, "y": "Avg Total Compensation"}, 
+                labels={"x": 'Dimension', "y": "Avg Total Compensation"}, 
                 hover_data=['total_compensation'],
                 title="Total Compensation in Bottom 5 {}".format(segment_value)
             )
@@ -191,7 +191,7 @@ def update_silder_charts(year_value, top_or_bottom, segment_value):
                 x=aggrgate_df(bottom_slider_df,segment_value,'pct_benefit', top=False).index.tolist(),
 
                 y=['pct_benefit','total_compensation'],
-                labels={"x": segment_value, "y": "Benefit Percentage"}, 
+                labels={"x": 'Dimension', "y": "Benefit Percentage"}, 
                 hover_data=['total_compensation'],
                 title="Benefit percentage in Top 5 {}".format(segment_value)
             )
@@ -222,7 +222,7 @@ def update_distplot(job_value):
         print(f'The distribution df is {dist_df.shape}')
 
         #dist_fig = ff.create_distplot(dist_df,'total_compensation')
-        fig = px.histogram(dist_df, x="year", y="total_compensation")
+        fig = px.histogram(dist_df, "total_compensation", color='year', marginal='box')
     
     return second_container, fig
 
