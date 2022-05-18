@@ -6,10 +6,9 @@ from sodapy import Socrata
 
 import pandas as pd
 
-from dash import Dash, html, dcc, Input, Output 
+from dash import Dash, html, dcc, Input, Output, exceptions 
 import plotly.express as px
-
-
+import plotly.figure_factory as ff
 
 ######################################################
 # MVC - Model: 1.load  
@@ -30,22 +29,24 @@ except:
 
 # MVC - Model: 2.data prep and clean
 clean_df = data_clean(df)
+print(clean_df.head())
 
-# df['year']=df["year"].dt.year
+# help function
+def aggrgate_df(target, column_name,  sort_by_item, top = True):
 
+    df = target.copy()
+    agg_df = pd.DataFrame(df.groupby(column_name)[['salaries', 'overtime', 'other_salaries', 'total_salary', 'retirement', 'health_and_dental', 'other_benefits', 'total_benefits', 'total_compensation']].mean())
+    agg_df['pct_benefit'] = agg_df['total_benefits']/agg_df['total_compensation']
 
-# def generate_table(dataframe, max_rows=10):
-#     return html.Table([
-#         html.Thead(
-#             html.Tr([html.Th(col) for col in dataframe.columns])
-#         ),
-#         html.Tbody([
-#             html.Tr([
-#                 html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
-#             ]) for i in range(min(len(dataframe), max_rows))
-#         ])
-#     ])
-
+    top_agg = agg_df.sort_values(by=[sort_by_item], ascending=False)
+    bom_agg = agg_df.sort_values(by=[sort_by_item], ascending=True)
+    #agg_df.reset_index(inplace=True)
+    if top:
+        top_5_df = top_agg.iloc[0:5]
+        return top_5_df
+    else:
+        less_5_df = bom_agg.iloc[0:5]
+        return less_5_df
 
 ######################################################
 # MVC - View  
@@ -53,136 +54,173 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = Dash(__name__, external_stylesheets=external_stylesheets)
 
-
 app.layout = html.Div(children=[
-    html.H1("Analytics Dashboard of SF Controller Employee Compensation", style={"textAlign":"center"}),
+    html.H3("Analytics Dashboard of SF Controller Employee Compensation", style={"textAlign":"center"}),
+    html.H4("Analytics Dashboard", style={"textAlign":"center"}),
+
     html.Hr(),
-    html.P("xxxxxxxxxxxxx"),
+    html.H6("Discover compensation from aggregated insights"),
+    html.Hr(),
+    html.P("Which year are you looking for?"),
 
-    dcc.Slider(
-        clean_df['year'].min(),
-        clean_df['year'].max(),
-        step=None,
-        value=clean_df['year'].max(),
-        marks={str(year): str(year) for year in clean_df['year'].unique()},
-        id='year-slider'
-    ),
-    dcc.Graph(id='slider-bar'),
-
+    dcc.Slider(id='year_slider', value=2013, min=2018, max=2021, step=1,
+         marks={"2018":'2018', "2019":'2019',"2020":'2020',"2021":'2021'}
+     ),
+    html.P("Which segment are you looking for?"),    
     html.Div([
-        dcc.Dropdown(id="drop_year",
-                    options=[
-                     {"label": "2018", "value": 2018},
-                     {"label": "2019", "value": 2019},
-                     {"label": "2020", "value": 2020},
-                     {"label": "2021", "value": 2021}],
-                    multi=False,
-                    value=2020,
-                    style={'width': "30%"}
-                    ),
+        dcc.RadioItems(id="drop_top",
+                options = [
+                     {"label": "Top 5", "value": 'top'},
+                     {"label": "Bottom 5", "value": 'bottom'}],
+                value = 'top',
+                style={'width': "50%", 'display': 'inline-block'}
+            ),                
         dcc.Dropdown(id="drop_segment",
                     options=[
-                        {"label": "Organization_group(6)", "value": 'organization_group'},
-                        {"label": "Departments(51)", "value": 'department'},
-                        {"label": "Job_family(56)", "value": 'job_family'},
-                        {"label": "Job(1111)", "value": 'job'}],
+                        {"label": "Organization_group", "value": 'organization_group'},
+                        {"label": "department", "value": 'department'},
+                        {"label": "job_family", "value": 'job_family'},
+                        {"label": "job", "value": 'job'}],
                     multi=False,
-                    value='Organization_group(6)',
-                    style={'width': "30%"}
+                    value="organization_group",
+                    style={'width': "50%", 'display': 'inline-block'}
+                    )
+    ]),
+    html.Div(id='output_container', children=[]),
+    html.Hr(),
+    html.Div([
+            html.Div([dcc.Graph(id = 'slider_graph')], className="six columns"),
+            html.Div([dcc.Graph(id = 'pct_graph')], className="six columns"),
+        ], className="row"),
+
+    html.Hr(),
+    
+    html.Div([
+        html.H6("Deep Dive Into Popular Job Choice"),
+        dcc.RadioItems(id="three_job",
+                    options=[
+                     {"label": "Transit Operator", "value": 'Transit Operator'},
+                     {"label": "Special Nurse", "value": 'Special Nurse'},
+                     {"label": "Firefighter", "value": 'Firefighter'}],
+                    value='Firefighter',
+                    style={'width': "90%",'display': 'inline-block'}
                     ),
-
-        dcc.RadioItems(
-                ['Top 5', 'Bottom 5'],
-                'Top 5',
-                id='top_or_bottom',
-                inline=True,
-                style={'width': "30%", 'display': 'inline-block'}
-            )                
-        ]),
-    dcc.Graph(id='segment_fig')
-# VIOLIN 
-
-    # html.Div(html.Div(id="drpdn-div", children=[], className="two columns"),className="row"),
-
-    # dcc.Interval(id="timer", interval=1000*60, n_intervals=0),
-    # dcc.Store(id="stored", data={}),
-
-#    html.Div(id="output-div", children=[]), 
+        html.Div(id='second_container', children=[]),
+        html.Div([
+            dcc.Graph(id ='distplot_graph')
+        ])
+    ]
+    )
+    #dcc.Store(id="stored", data={}),
 ])
-
-
 
 ######################################################
 # MVC - Control
 
-# silder bar chart
+# dimension charts
 @app.callback(
-    Output('slider-bar', 'figure'),
-    Input('year-slider', 'value'))
-def update_bar_charts(Year):
-    bar_df = clean_df[clean_df["year"] == Year]
-    bar_agg_df = bar_df.groupby('organization_group')['total_compensation'].agg(['mean','median'])
+    [
+        Output('output_container', 'children'), 
+        Output('slider_graph', 'figure'),
+        Output('pct_graph', 'figure')
+        ],
+    [   
+        Input('year_slider', 'value'),
+        Input('drop_top','value'),
+        Input('drop_segment', 'value')
+        ])
+def update_silder_charts(year_value, top_or_bottom, segment_value):
 
-    bar = px.bar(
-        bar_agg_df,
-        x= bar_agg_df.index,
-        y=bar_agg_df['mean'],
-    #    color=bar_agg_df['mean'],
-    #    barmode='group',
-        labels={"x": "Org Group", "y": "Avg Total Compensation"}, 
-        hover_data=[bar_agg_df['mean'], bar_agg_df['median']],
-        color_continuous_scale=px.colors.sequential.RdBu,
-        text=bar_agg_df['mean'],
-        title="Median TC by Organization_group"
-    )
-    bar.update_layout(
-        title=dict(x=0.5), margin=dict(l=550, r=20, t=60, b=20), paper_bgcolor="#D6EAF8"
-    )
-    bar.update_traces(texttemplate="%{text:.2s}")
-    return bar
+    print(type(year_value))
+    print(year_value)
+    slider_df = clean_df.copy()
+    container = f"Aggregated Data Insight with Year of {year_value} and segment in the view of {segment_value}"
+    print(slider_df.head(2), 'The before slider df info')
+    
+    
+    slider_df = slider_df[slider_df['year'] == 2013]
 
-# two_dropdown_fig
-@app.callback(
-    Output('segment_fig', 'figure'),
-    Input('drop_year', 'value'),
-    Input('drop_segment', 'value'),
-    # Input('drop_metrics', 'value'),
-    Input('top_or_bottom','value'))
-def update_segment_fig(year, segment, metrics,top):
-    year_df = clean_df[clean_df['year'] == year]
-
-    if  top =='Top 5':
-        fig = px.bar(
-            x= year_df[segment].value_counts()[:5].index, 
-            y = year_df[segment].value_counts()[:5],
-#            hover_data= [segment]
-            )
+    if len(slider_df.index)==0:
+        raise exceptions.PreventUpdate
     else:
-        fig = px.bar(
-            x= year_df[segment].value_counts()[-5:].index, 
-            y = year_df[segment].value_counts()[-5:],
-#            hover_data= [segment]
-            )        
+        print(slider_df.head(10), 'The after slider df info')
 
-    fig.update_layout(margin={'l': 40, 'b': 40, 't': 10, 'r': 0}, hovermode='closest')
+    # sort_by_item: 'pct_benefit' or 'total_compensation"
+        if top_or_bottom == 'top':
+            print('--------Top run--------')
+            top_slider_df = slider_df.copy()
+            # top_df = aggrgate_df(slider_df,segment_value, 'total_compensation',top=True)
+            # print(top_df.columns)
+            # print(top_df.head(3))
+            # print('-------------!!!Top end!!!!-------')
 
-    return fig
+            bar = px.bar(
+                data_frame= aggrgate_df(top_slider_df,segment_value,'total_compensation', top=True),
+                x=aggrgate_df(top_slider_df,segment_value,'total_compensation', top=True).index.tolist(),
+                y=['total_salary','total_benefits'],
+                labels={"x": segment_value, "y": "Avg Total Compensation"}, 
+                hover_data=['total_compensation'],
+            #    text=top_df.index.tolist(),
+                title="Total Compensation in Top 5 {}".format(segment_value)
+            )
 
+            pct_bar = px.bar(
+                data_frame= aggrgate_df(top_slider_df,segment_value,'pct_benefit', top=True),
+                x=aggrgate_df(top_slider_df,segment_value,'pct_benefit', top=True).index.tolist(),
 
+                y=['pct_benefit','total_compensation'],
+                labels={"x": segment_value, "y": "Benefit Percentage"}, 
+                hover_data=['total_compensation'],
+            #    text=top_df.index.tolist(),
+                title="Benefit of TC percentage in Top 5 {}".format(segment_value)
+            )
 
-# auto pull data from API every 5 minutes, then store it in hidden div
-# also, create a dropdown filter for next deep dive invastigate section
-@app.callback(Output("stored", "data"),
-            #  Output("drpdn-div", "children"),
-            Input('year-slider', 'value'),
-            Input("timer","n_intervals"))
-def store_aggre(year,n):
-    filtered_df = clean_df[clean_df.year == year]
-    test_df = filtered_df[['organization_group','department','total_compensation']].groupby(['organization_group','department'])['total_compensation'].agg(['mean','median','sum'])
-    test_df.reset_index(inplace=True)
-    print(test_df.shape)
-    return test_df.to_dict('records')
-# xx.sort_values(by='sum', ascending=False).iloc[0:10]
+        elif top_or_bottom =='bottom':
+            print('--------Bottom run--------')
+            bottom_slider_df = slider_df.copy()
+
+            bar = px.bar(
+                data_frame= aggrgate_df(bottom_slider_df,segment_value,'total_compensation', top=False),
+                x=aggrgate_df(bottom_slider_df,segment_value,'total_compensation', top=False).index.tolist(),
+                y=['total_salary','total_benefits'],
+                labels={"x": segment_value, "y": "Avg Total Compensation"}, 
+                hover_data=['total_compensation'],
+                title="Total Compensation in Bottom 5 {}".format(segment_value)
+            )
+            pct_bar = px.bar(
+                data_frame= aggrgate_df(bottom_slider_df,segment_value,'pct_benefit', top=False),
+                x=aggrgate_df(bottom_slider_df,segment_value,'pct_benefit', top=False).index.tolist(),
+
+                y=['pct_benefit','total_compensation'],
+                labels={"x": segment_value, "y": "Benefit Percentage"}, 
+                hover_data=['total_compensation'],
+                title="Benefit percentage in Top 5 {}".format(segment_value)
+            )
+        else:
+            raise exceptions.PreventUpdate
+    return container, bar, pct_bar
+
+@app.callback(
+    [Output('second_container', 'children'), 
+    Output('distplot_graph','figure')],
+    Input('three_job','value')
+)
+def update_distplot(job_value):
+    dist_df = clean_df.copy()
+    print(job_value)
+    print(type(job_value))
+    print('----distribution begin!!!!!------')
+    print(dist_df.head(9))
+
+    second_container = f"The Year-over-Year changes in distribution in {job_value} job"
+    #yr_lst = [2018,2019,2020,2021]
+    dist_df = dist_df[dist_df['job'] ==job_value]
+    print('----distribution data ready!!!!!------')
+    print(dist_df.shape)
+
+    #dist_fig = ff.create_distplot(dist_df,'total_compensation')
+    fig = px.histogram(dist_df, x="year", y="total_compensation")
+    return second_container, fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
