@@ -60,7 +60,6 @@ app.layout = html.Div(children=[
 
     html.Hr(),
     html.H6("Discover compensation from aggregated insights"),
-    html.Hr(),
     html.P("Which year are you looking for?"),
 
     dcc.Slider(id='year_slider', value=2013, min=2018, max=2021, step=1,
@@ -215,11 +214,16 @@ def update_distplot(job_value):
     second_container = f"The Year-over-Year changes in distribution in {job_value} job"
     #yr_lst = [2018,2019,2020,2021]
     dist_df = dist_df[dist_df['job'] ==job_value]
-    print('----distribution data ready!!!!!------')
-    print(dist_df.shape)
+    
+    if len(dist_df.index)==0:
+        raise exceptions.PreventUpdate
+    else:
+        print('----distribution data ready!!!!!------')
+        print(f'The distribution df is {dist_df.shape}')
 
-    #dist_fig = ff.create_distplot(dist_df,'total_compensation')
-    fig = px.histogram(dist_df, x="year", y="total_compensation")
+        #dist_fig = ff.create_distplot(dist_df,'total_compensation')
+        fig = px.histogram(dist_df, x="year", y="total_compensation")
+    
     return second_container, fig
 
 if __name__ == '__main__':
