@@ -3,11 +3,16 @@
 --------------------------------------------------
 ## Objectives:
 
-1. Discover and understand the high level trends and compensation component details from the datasets of San Francisco Controller Employees Total Compensation (TC) during past 4 years.
+1. Explore and discover the compensation details and high-level trends from historical datasets of San Francisco Controller Employees Total Compensation (TC) during past 4 years.
 
-2. Provide visualized insights to job-seekers that how does SF Controller's Office pay to their employees.
+2. Provide visualized insights to help job-seekers learn more about how does SF Controller's Office pay to their employees.
 
-![web_demo.mov](/web_demo.mov)
+[web_demo.mov](/web_demo.mov)
+
+
+https://user-images.githubusercontent.com/57109686/169027905-fa1a7b0e-4e37-46ef-827e-cf601e28a8da.mov
+
+
 --------------------------------------------------
 **Screenshot**
 ![web_screenshot.png](/web_screenshot.png)
@@ -20,29 +25,29 @@
 
 3. Application script: [sf_comp_api_data.py](/sf_comp_api_data.py)
 
+4. deploy to Web(TBC)
 
 --------------------------------------------------
 ## Limitation and Next Steps:
-Since the time and scope limitations, this project focus on past 4 years controller office job market, and dashboard focus on aggregate information. Also, the large scale data means huge page_load time. Next steps I plan to:
+Since time and scope limitation, this project focused on the job market and information from controller office since 2018, and the dashboard currently focus on aggregate information. Besides challegence from data, the large-scale data means huge page_load time when I deployed. Next steps I plan to:
 
-* Introduce more dataset, merge and find more insights: 
-    * for example, comparing to other cities controller compensation during the same period, 
+* Introduce more datasets, cross and merge to draw more useful insights to job-seeker: 
+    * for example, comparing to other cities controller compensation in the same period, 
     * or compare to non-gov job market)
 * Increase page load speed, will add cache or dcc.store to temparay store and share data
-* add format style
-* deploy to heroku
+* Add pretty style
+* Deploy to heroku
 
 --------------------------------------------------
 ### Data Resources:
-
 The San Francisco Controller's Office maintains a database to record the salary and benefits paid to City employees since fiscal year 2013.
 SF Controller's Office Employee Salary Data [origin_data_website](https://data.sfgov.org/City-Management-and-Ethics/Employee-Compensation/88g8-5mnd)
 
 --------------------------------------------------
 ## ANALYTICS Part
 The analysis process and data insights are in the ETL Jupyter Notebook  [sf_comp_jupyter_analytics.ipynb](/sf_comp_jupyter_analytics.ipynb)
-### Scope and Assumption
 
+### Scope and Assumption
 This Analytics only considers 4 calendar years from 2018 to 2021.
 Rows reduction from 759K to 168K, 
 * (758604,22) ===> (168437, 22)
@@ -87,7 +92,7 @@ no username or password needed, query in API step to reduce the dataset size.
 Clients are able to choose the rank *top 5* or *bottom 5* to display.
 
 - Next steps:
-~~interval, auto update in seconds, then dcc.store to store API data in dictory file,(on the clients side)~~store cleaned data 
+tore cleaned data to save load time
 --------------------------------------------------
 ## My other dashboard projects
 
