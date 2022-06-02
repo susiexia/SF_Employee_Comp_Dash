@@ -193,7 +193,7 @@ def update_silder_charts(year_value, top_or_bottom, segment_value):
                 y=['pct_benefit','total_compensation'],
                 labels={"x": 'Dimension', "y": "Benefit Percentage"}, 
                 hover_data=['total_compensation'],
-                title="Benefit percentage in Top 5 {}".format(segment_value)
+                title="Benefit percentage in Bottom 5 {}".format(segment_value)
             )
         else:
             raise exceptions.PreventUpdate
